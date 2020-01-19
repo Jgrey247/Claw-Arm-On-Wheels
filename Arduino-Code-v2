@@ -1,0 +1,186 @@
+//The servo library is imported to allow the program to call servo functions.
+#include <Servo.h>
+//Variables for each servo motor are initialized.
+//This variable allows for control of the servo motor that rotates the entire arm about a vertical axis.
+Servo servo1;
+//This variable allows for control of the servo motor that rotates the upper half of the arm about a horizontal axis.
+Servo servo2;
+//This variable allows for control of the servo motor that rotates gears which cause the claw to close or open.
+Servo servo3;
+//An angle value for the servo motors' angular position is initialized.
+int position = 0;
+//Variables are initialized based on each circuit component's port.
+int button = 2;
+int obstacleSensor = 3;
+int dcMotor = 4;
+//Other variables are initialized for use in the program.
+int start = 0;
+int lastPos = 0;
+int moveTime = 1000;
+int runTime = 3000;
+int dropAngle = 30;
+int i = 0;
+void setup() 
+{
+// put your setup code here, to run once:
+//The button and obstacle sensor are set as input components while the motors are set as output components.
+pinMode(button,INPUT);
+pinMode(obstacleSensor,INPUT);
+servo1.attach(11);
+servo2.attach(12);
+servo3.attach(13);
+pinMode(dcMotor,OUTPUT);
+}
+void loop() 
+{
+// put your main code here, to run repeatedly:
+//The program will check if the button is pressed as well as if the obstacle sensor detects an object.
+int press = digitalRead(button);
+//Code in this loop executes when the button is pressed.
+if(press == HIGH)
+{
+//The start variable is set to one so that the main code is not dependent on the button always being held.
+start = 1;
+}
+//Code in this loop executes when start = 1 immediately after the button is pressed.
+if(start == 1)
+{
+//Code in this loop executes as the sensor does not detect an object.
+//The arm will rotate back and forth for two iterations before moving forward.
+for(i = 0; i < 2; i += 1)
+{
+//The angle of servo1 changes from 0 degrees to 180 degrees.
+for(position = 0; position < 180; position += 1)
+{
+servo1.write(position);
+//The moveObject function will execute whenever the sensor detects an object along the arm's rotation.
+moveObject();
+//Once the moveObject function executes, the program will leave the for loop and stop until the button is pressed again.
+if(start = 0)
+{
+break;
+}
+delay(10);
+}
+//The angle of servo1 changes from 180 degrees to 0 degrees.
+for(position = 180; position > 0; position -= 1)
+{
+servo1.write(position);
+moveObject();
+//Once the moveObject function executes, the program will leave the for loop and stop until the button is pressed again.
+if(start = 0)
+{
+break;
+}
+delay(10);
+}
+}
+delay(900);
+//The DC motor starts rotating its axle for as long as the moveTime in milliseconds lasts.
+digitalWrite(dcMotor,HIGH);
+delay(moveTime);
+digitalWrite(dcMotor,LOW);
+delay(1000);
+//Variable i is set to 0 to repeat the process until the sensor detects an object.
+i = 0; 
+}
+//Code in the else loop will continue running until the obstacle sensor detects an object.
+}
+//A function called moveObject is defined to check if the sensor detects and object so that the arm can pick it up and move it elsewhere.
+void moveObject()
+{
+int obstacle = digitalRead(obstacleSensor);
+//Code in this loop executes when the sensor detects an object.
+if(obstacle == LOW)
+{
+//The value of servo1's position is recorded as lastPos.
+lastPos = position;      
+position = 90;
+//The angle of servo2 changes from 90 degrees to 150 degrees.
+for(position = 90; position < 150; position += 1)
+{
+servo2.write(position);
+delay(10);
+}
+delay(900);
+position = 0;
+//The angle of servo3 changes from 0 degrees to 30 degrees.
+for(position = 0; position < 30; position += 1)
+{
+servo3.write(position);
+delay(10);
+}
+delay(900);
+position = 150;
+//The angle of servo2 changes from 150 degrees to 90 degrees.
+for(position = 150; position > 90; position -= 1)
+{
+servo2.write(position);
+delay(10);
+}
+delay(900);
+//The position value is overwritten with lastPos to start the rotation of servo1's gears from its last position.
+position = lastPos;
+//The angular position of servo1 increases if its last position is less than 90 degrees.
+while(position < 90)
+{
+servo1.write(position);
+delay(10);
+position += 1;
+}
+//The angular position of servo1 decreases if its last position is greater than 90 degrees.
+while(position > 90)
+{
+servo1.write(position);
+delay(10);
+position -= 1;
+}
+delay(900);
+//The DC motor starts rotating its axle for as long as the runTime in milliseconds lasts.
+digitalWrite(dcMotor,HIGH);
+delay(runTime);
+digitalWrite(dcMotor,LOW);
+//The angular position of servo1 increases if its position is less than the desired angle to drop the object.
+while(position < dropAngle)
+{
+servo1.write(position);
+delay(10);
+position += 1;
+}
+//The angular position of servo1 decreases if its position is greater than the desired angle to drop the object.
+while(position > dropAngle)
+{
+servo1.write(position);
+delay(10);
+position -= 1;
+}
+delay(900);
+position = 90;
+//The angle of servo2 changes from 90 degrees to 150 degrees.
+for(position = 90; position < 150; position += 1)
+{
+servo2.write(position);
+delay(10);
+}
+delay(900);
+position = 30;
+//The angle of servo3 changes from 30 degrees to 0 degrees.
+for(position = 30; position > 0; position -= 1)
+{
+servo3.write(position);
+delay(10);
+}
+delay(900);
+position = 150;
+//The angle of servo2 changes from 150 degrees to 90 degrees.
+for(position = 150; position > 90; position -= 1)
+{
+servo2.write(position);
+delay(10);
+}
+delay(900);
+servo1.write(position);
+start = 0;
+//The program will stop until the button is pressed again.
+}
+}
